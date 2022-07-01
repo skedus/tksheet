@@ -4109,7 +4109,7 @@ class MainTable(tk.Canvas):
                                                  fc + 2 + self.txt_h + 2,
                                                  fr + 2 + self.txt_h + 2,
                                                  fill = tf if self.cell_options[(r, dcol)]['checkbox']['state'] == "normal" else self.table_grid_fg,
-                                                 outline = "", tag = "cb", draw_check = self.data_ref[r][dcol])
+                                                 outline = "", tag = "cb", draw_check = self.cell_options[(r, dcol)]['checkbox']['checked'])
                     
                     try:
                         if cell_alignment == "w":
@@ -5220,22 +5220,29 @@ class MainTable(tk.Canvas):
         if dcol is None:
             dcol = c if self.all_columns_displayed else self.displayed_columns[c]
         if self.cell_options[(r, dcol)]['checkbox']['state'] == "normal":
-            self._set_cell_data(r, c, dcol, value = not self.data_ref[r][dcol] if type(self.data_ref[r][dcol]) == bool else False, undo = undo, cell_resize = False)
+            self.cell_options[(r, dcol)]['checkbox']['checked'] = not self.cell_options[(r, dcol)]['checkbox']['checked']
+            if self.cell_options[(r, dcol)]['checkbox']['checked']:
+                self._set_cell_data(r, c, dcol, value=self.cell_options[(r, dcol)]['checkbox']['onvalue'])
+            else:
+                self._set_cell_data(r, c, dcol, value=self.cell_options[(r, dcol)]['checkbox']['offvalue'])
             if self.cell_options[(r, dcol)]['checkbox']['check_function'] is not None:
-                self.cell_options[(r, dcol)]['checkbox']['check_function']((r, c, "CheckboxClicked", f"{self.data_ref[r][dcol]}"))
+                self.cell_options[(r, dcol)]['checkbox']['check_function']((r, c, "CheckboxClicked", f"{self.cell_options[(r, dcol)]['checkbox']['checked']}"))
             if self.extra_end_edit_cell_func is not None:
                 self.extra_end_edit_cell_func(EditCellEvent(r, c, "Return", f"{self.data_ref[r][dcol]}", "end_edit_cell"))
         if redraw:
             self.refresh()
 
-    def create_checkbox(self, r = 0, c = 0, checked = False, state = "normal", redraw = False, check_function = None, text = ""):
+    def create_checkbox(self, r = 0, c = 0, checked = False, state = "normal", redraw = False, check_function = None, text = "", onvalue='True', offvalue='False'):
         if (r, c) in self.cell_options and any(x in self.cell_options[(r, c)] for x in ('dropdown', 'checkbox')):
             self.destroy_dropdown_and_checkbox(r, c)
-        self._set_cell_data(r, dcol = c, value = checked, cell_resize = False, undo = False) #only works because cell_resize is false and undo is false, otherwise needs displayed col and dcol args
+        #self._set_cell_data(r, dcol = c, value = checked, cell_resize = False, undo = False) #only works because cell_resize is false and undo is false, otherwise needs displayed col and dcol args
         if (r, c) not in self.cell_options:
             self.cell_options[(r, c)] = {}
         self.cell_options[(r, c)]['checkbox'] = {'check_function': check_function,
                                                  'state': state,
+                                                 'checked': checked,
+                                                 'onvalue': onvalue,
+                                                 'offvalue': offvalue,
                                                  'text': text}
         if redraw:
             self.refresh()

@@ -2231,7 +2231,9 @@ class Sheet(tk.Frame):
                         state = "normal",
                         redraw = False,
                         check_function = None,
-                        text = ""):
+                        text = "",
+                        onvalue=True,
+                        offvalue=False):
         if isinstance(r, str) and r.lower() == "all":
             for r_ in range(len(self.MT.data_ref)):
                 self.MT.create_checkbox(r = r_,
@@ -2240,7 +2242,10 @@ class Sheet(tk.Frame):
                                         state = state,
                                         redraw = redraw,
                                         check_function = check_function,
-                                        text = text)
+                                        text = text,
+                                        onvalue = onvalue,
+                                        offvalue = offvalue
+                                        )
         else:
             self.MT.create_checkbox(r = r,
                                     c = c,
@@ -2248,20 +2253,23 @@ class Sheet(tk.Frame):
                                     state = state,
                                     redraw = redraw,
                                     check_function = check_function,
-                                    text = text)
+                                    text = text,
+                                    onvalue = onvalue,
+                                    offvalue = offvalue
+                                    )
 
-    def click_checkbox(self,
-                       r,
-                       c,
-                       checked = None):
+    def click_checkbox(self, r,  c, checked = None):
         if (r, c) in self.MT.cell_options and 'checkbox' in self.MT.cell_options[(r, c)]:
-            if not type(self.MT.data_ref[r][c]) == bool:
-                if checked is None:
-                    self.MT.data_ref[r][c] = False
-                else:
-                    self.MT.data_ref[r][c] = bool(checked)
+            if checked is not None:
+                self.MT.cell_options[(r, c)]['checkbox']['checked'] = checked
             else:
-                self.MT.data_ref[r][c] = not self.MT.data_ref[r][c]
+                self.MT.cell_options[(r, c)]['checkbox']['checked'] = not self.MT.cell_options[(r, c)]['checkbox']['checked'] 
+            
+            if self.MT.cell_options[(r, c)]['checkbox']['checked']:
+                self.MT.data_ref[r][c] = self.MT.cell_options[(r, c)]['checkbox']['onvalue']
+            else:
+                self.MT.data_ref[r][c] = self.MT.cell_options[(r, c)]['checkbox']['offvalue']
+
 
     def get_checkboxes(self):
         return {k: v['checkbox'] for k, v in self.MT.cell_options.items() if 'checkbox' in v}
@@ -2280,16 +2288,22 @@ class Sheet(tk.Frame):
                  checked = None,
                  state = None,
                  check_function = "",
-                 text = None):
+                 text = None,
+                 onvalue='True', 
+                 offvalue='False'):
         if type(checked) == bool:
-            self.set_cell_data(r, c, checked)
+            self.MT.cell_options[(r, c)]['checkbox']['checked'] = checked
         if check_function != "":
             self.MT.cell_options[(r, c)]['checkbox']['check_function'] = check_function
         if state.lower() in ("normal", "disabled"):
             self.MT.cell_options[(r, c)]['checkbox']['state'] = state
         if text is not None:
             self.MT.cell_options[(r, c)]['checkbox']['text'] = text
-        return {**self.MT.cell_options[(r, c)]['checkbox'], 'checked': self.MT.data_ref[r][c]}
+        if onvalue is not None:
+            self.MT.cell_options[(r, c)]['checkbox']['onvalue'] = onvalue
+        if offvalue is not None:
+            self.MT.cell_options[(r, c)]['checkbox']['onvalue'] = offvalue
+        return {**self.MT.cell_options[(r, c)]['checkbox'], 'checked': self.MT.cell_options[(r, c)]['checkbox']['checked']}
     
     def create_header_dropdown(self,
                                c = 0,

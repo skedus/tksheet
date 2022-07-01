@@ -1453,7 +1453,7 @@ class ColumnHeaders(tk.Canvas):
         if redraw:
             self.MT.refresh()
 
-    def create_checkbox(self, c = 0, checked = False, state = "normal", redraw = False, check_function = None, text = ""):
+    def create_checkbox(self, c = 0, checked = False, state = "normal", redraw = False, check_function = None, text = "", onvalue='True', offvalue='False'):
         if c in self.cell_options and any(x in self.cell_options[c] for x in ('dropdown', 'checkbox')):
             self.destroy_dropdown_and_checkbox(c)
         self._set_cell_data(dcol = c, value = checked, cell_resize = False)
@@ -1461,6 +1461,9 @@ class ColumnHeaders(tk.Canvas):
             self.cell_options[c] = {}
         self.cell_options[c]['checkbox'] = {'check_function': check_function,
                                             'state': state,
+                                            'checked': checked,
+                                            'onvalue': onvalue,
+                                            'offvalue': offvalue,
                                             'text': text}
         if redraw:
             self.MT.refresh()
